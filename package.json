@@ -1,0 +1,17 @@
+{
+  "name": "newsletter-studio",
+  "version": "1.0.0",
+  "description": "Turn raw notes, spreadsheets and photos into designed newsletters. Runs on GitHub Pages.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node cli/build.mjs",
+    "build:all": "node cli/build.mjs --pdf --png",
+    "start": "node cli/serve.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

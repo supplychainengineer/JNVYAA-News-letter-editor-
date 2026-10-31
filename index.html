@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Newsletter Studio</title>
+<meta name="description" content="Turn raw notes, spreadsheets and photos into designed newsletters.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237a1f2b'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/editor.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo" aria-hidden="true"></span>Newsletter Studio</div>
+  <div class="spacer"></div>
+  <div class="export">
+    <button class="btn ghost" id="btn-print" title="Open the print dialog — choose “Save as PDF”">PDF</button>
+    <button class="btn ghost" id="btn-png" title="Download a high-resolution image">PNG</button>
+    <button class="btn primary" id="btn-html" title="Download a single HTML file with photos embedded">Download HTML</button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="panel">
+    <nav class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="content">Content</button>
+      <button role="tab" aria-selected="false" data-tab="photos">Photos <span class="count" id="photo-count">0</span></button>
+      <button role="tab" aria-selected="false" data-tab="design">Design</button>
+    </nav>
+
+    <section class="tab" id="tab-content">
+      <div class="row">
+        <button class="btn small" id="btn-sample">Load sample</button>
+        <label class="btn small">Import file<input type="file" id="file-import" accept=".md,.markdown,.txt,.csv,.tsv,.json,text/*,application/json" hidden></label>
+        <select class="btn small" id="insert-block" aria-label="Insert a block">
+          <option value="">+ Add block</option>
+          <option value="story">Story</option>
+          <option value="stats">Stats</option>
+          <option value="events">Events</option>
+          <option value="quote">Quote</option>
+          <option value="people">People spotlight</option>
+          <option value="chart">Bar chart</option>
+          <option value="table">Table</option>
+          <option value="gallery">Photo gallery</option>
+          <option value="cta">Call to action</option>
+        </select>
+      </div>
+      <textarea id="source" spellcheck="true" placeholder="Paste notes, a CSV, JSON or newsletter markdown…"></textarea>
+      <ul class="warnings" id="warnings"></ul>
+      <details class="help">
+        <summary>How to format raw data</summary>
+        <div class="help-body">
+          <p>Paste anything — loose notes work. Add a little structure for more control:</p>
+<pre>---
+title: The Alumni Chronicle
+org: Riverside Alumni Association
+issue: Issue 14
+date: November 2026
+tagline: Stories from our community
+theme: heritage
+---
+
+![Cover caption](cover.jpg)
+
+Opening note from the editor…
+
+## A story headline
+### Kicker label
+![Caption](photo.jpg)
+Paragraphs, **bold**, *italic*, [links](https://…)
+- bullet points
+
+## By the numbers
+612 | Alumni at the reunion
+₹18L | Raised
+
+## Upcoming events
+Nov 22 | Chapter meetup | Bengaluru, 5 PM
+
+## Spotlight
+Name | Role | photo.jpg | Short bio
+
+## In their words
+&gt; A quote.
+— Who said it
+
+## Members by city {chart}
+Bengaluru | 412
+
+## Get involved {cta}
+Short pitch.
+[Button label](https://…)</pre>
+          <p>Section types are detected from the rows (dates → events, numbers → stats, photos → spotlight). Force one with <code>{stats}</code>, <code>{events}</code>, <code>{quote}</code>, <code>{people}</code>, <code>{chart}</code>, <code>{table}</code>, <code>{gallery}</code> or <code>{cta}</code> after a heading.</p>
+          <p><b>CSV</b> with columns like <code>type, heading, body, image, date, value, label</code> works too, as does a plain two-column spreadsheet (becomes a chart).</p>
+          <p>Photos you upload but don't mention are placed automatically: cover first, then stories without a picture, the rest in a gallery.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="tab" id="tab-photos" hidden>
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="photo-input" accept="image/*" multiple hidden>
+        <strong>Drop photos here</strong>
+        <span>or click to choose · JPG, PNG, WebP, SVG · large photos are resized</span>
+      </label>
+      <p class="hint">Reference a photo by its file name, e.g. <code>![Caption](reunion.jpg)</code>. Click <b>Insert</b> to add it at the cursor.</p>
+      <div class="photo-grid" id="photo-grid"></div>
+      <div class="row end"><button class="btn small danger" id="btn-clear-photos">Remove all photos</button></div>
+    </section>
+
+    <section class="tab" id="tab-design" hidden>
+      <h3 class="label">Theme</h3>
+      <div class="theme-grid" id="theme-grid"></div>
+      <h3 class="label">Accent colour</h3>
+      <div class="row">
+        <input type="color" id="accent" value="#7a1f2b" aria-label="Accent colour">
+        <button class="btn small" id="accent-reset">Use theme colour</button>
+      </div>
+      <h3 class="label">Options</h3>
+      <label class="check"><input type="checkbox" id="opt-numbers" checked> Number the sections</label>
+      <label class="check"><input type="checkbox" id="opt-auto" checked> Auto-place photos I haven't referenced</label>
+    </section>
+  </aside>
+
+  <section class="stage">
+    <div class="stage-bar">
+      <div class="seg" role="group" aria-label="Preview width">
+        <button data-view="desktop" aria-pressed="true">Desktop</button>
+        <button data-view="mobile" aria-pressed="false">Mobile</button>
+      </div>
+      <div class="summary" id="summary"></div>
+    </div>
+    <div class="frame-wrap" id="frame-wrap">
+      <iframe id="preview" title="Newsletter preview"></iframe>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="drop-overlay" id="drop-overlay"><div>Drop photos or a data file</div></div>
+
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
